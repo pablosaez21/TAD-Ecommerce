@@ -11,50 +11,29 @@ use Illuminate\Support\Str;
 
 class SportStoreSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
+        // ── Categorías ───────────────────────────────────────────
         $categories = collect([
-            ['name' => 'Running', 'description' => 'Ropa y accesorios para correr.'],
-            ['name' => 'Fitness', 'description' => 'Productos para entrenamiento funcional y gimnasio.'],
-            ['name' => 'Tennis', 'description' => 'Equipamiento y ropa para tenis.'],
-        ])->map(fn (array $category) => Category::query()->updateOrCreate(
-            ['slug' => Str::slug($category['name'])],
-            [
-                'name' => $category['name'],
-                'description' => $category['description'],
-            ]
+            ['name' => 'Running',   'description' => 'Ropa y accesorios para correr.'],
+            ['name' => 'Fitness',   'description' => 'Productos para entrenamiento funcional y gimnasio.'],
+            ['name' => 'Tennis',    'description' => 'Equipamiento y ropa para tenis.'],
+            ['name' => 'Lifestyle', 'description' => 'Ropa deportiva para el día a día.'],
+        ])->map(fn (array $cat) => Category::query()->updateOrCreate(
+            ['slug' => Str::slug($cat['name'])],
+            ['name' => $cat['name'], 'description' => $cat['description']]
         ));
 
+        // ── Productos ────────────────────────────────────────────
         $products = [
             [
-                'name' => 'Camiseta Dry-Fit Runner',
-                'description' => 'Camiseta ligera y transpirable para running.',
-                'price' => 29.90,
-                'stock' => 120,
-                'active' => true,
-                'image' => 'products/running-shirt.jpg',
-                'categories' => ['running'],
-            ],
-            [
-                'name' => 'Leggings Pro Fitness',
-                'description' => 'Leggings elasticos de compresion para entrenamientos intensos.',
-                'price' => 44.50,
-                'stock' => 80,
-                'active' => true,
-                'image' => 'products/fitness-leggings.jpg',
-                'categories' => ['fitness'],
-            ],
-            [
-                'name' => 'Polo Performance Tennis',
-                'description' => 'Polo tecnico con secado rapido para cancha.',
-                'price' => 39.00,
-                'stock' => 60,
-                'active' => true,
-                'image' => 'products/tennis-polo.jpg',
-                'categories' => ['tennis'],
+                'name'        => 'Producto de prueba',
+                'description' => 'Producto de prueba para verificar el flujo de compra.',
+                'price'       => 1.00,
+                'stock'       => 99,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['running'],
             ],
         ];
 
@@ -63,10 +42,10 @@ class SportStoreSeeder extends Seeder
                 ['name' => $data['name']],
                 [
                     'description' => $data['description'],
-                    'price' => $data['price'],
-                    'stock' => $data['stock'],
-                    'active' => $data['active'],
-                    'image' => $data['image'],
+                    'price'       => $data['price'],
+                    'stock'       => $data['stock'],
+                    'active'      => $data['active'],
+                    'image'       => $data['image'],
                 ]
             );
 
@@ -78,12 +57,23 @@ class SportStoreSeeder extends Seeder
             $product->categories()->sync($categoryIds);
         }
 
+        // ── Usuarios ─────────────────────────────────────────────
         User::query()->updateOrCreate(
-            ['email' => 'admin@sportstore.com'],
+            ['email' => 'admin@doublehelix.com'],
             [
-                'name' => 'Administrador SportStore',
+                'name'     => 'Administrador',
                 'password' => Hash::make('password'),
-                'role' => 'admin',
+                'role'     => 'admin',
+                'language' => 'es',
+            ]
+        );
+
+        User::query()->updateOrCreate(
+            ['email' => 'usuario@doublehelix.com'],
+            [
+                'name'     => 'Usuario de prueba',
+                'password' => Hash::make('password'),
+                'role'     => 'user',
                 'language' => 'es',
             ]
         );

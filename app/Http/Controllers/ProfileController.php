@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -111,5 +112,21 @@ class ProfileController extends Controller
             ->get();
 
         return view('profile.orders', compact('orders'));
+    }
+
+    public function showOrder(Order $order): View
+    {
+        abort_if($order->user_id !== auth()->id(), 403);
+
+        $order->load(['lines.product', 'payment', 'address']);
+
+        return view('orders.show', compact('order'));
+    }
+
+    public function orderConfirmation(Order $order): View
+    {
+        abort_if($order->user_id !== auth()->id(), 403);
+
+        return view('orders.confirmation', compact('order'));
     }
 }
