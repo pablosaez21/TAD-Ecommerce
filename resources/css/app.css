@@ -1,11 +1,352 @@
-@import 'tailwindcss';
+/* ================================================================
+   DOUBLE HELIX — Custom CSS
+   Bootstrap 5 via CDN. Solo estilos propios aquí.
+   Fuentes: Bebas Neue (display) + DM Sans (cuerpo)
+   ================================================================ */
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+/* === VARIABLES ================================================= */
+:root {
+    --dh-primary:       #D4006A;
+    --dh-primary-dark:  #8A0044;
+    --dh-primary-light: #FBE9F2;
+    --dh-bg:            #F7F7F7;
+    --dh-text:          #111827;
+    --dh-muted:         #6B7280;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* === BASE ====================================================== */
+body {
+    background-color: var(--dh-bg);
+    color: var(--dh-text);
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* === TIPOGRAFÍA ================================================ */
+.dh-display {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px;
+    font-weight: 400; /* Bebas Neue solo tiene un peso */
+    line-height: 1.05;
+}
+
+/* Etiqueta pequeña de sección tipo "DESTACADOS", "SS26" */
+.dh-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--dh-primary);
+    margin-bottom: 12px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.dh-label--muted {
+    color: var(--dh-muted);
+}
+
+/* Título grande de sección */
+.dh-section-title {
+    font-weight: 300;
+    font-size: 2.5rem;
+    color: var(--dh-text);
+    margin-bottom: 8px;
+    line-height: 1.15;
+}
+
+/* === BOTONES =================================================== */
+.btn-dh {
+    background-color: #D4006A;
+    color: #fff;
+    border: none;
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    transition: all 200ms ease;
+}
+
+.btn-dh:hover,
+.btn-dh:focus {
+    background-color: #8A0044;
+    color: #fff;
+}
+
+.btn-dh-outline {
+    border: 1.5px solid #D4006A;
+    color: #D4006A;
+    background: transparent;
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    transition: all 200ms ease;
+}
+
+.btn-dh-outline:hover,
+.btn-dh-outline:focus {
+    background-color: #FBE9F2;
+    color: #D4006A;
+    border-color: #D4006A;
+}
+
+/* === NAVBAR ==================================================== */
+.dh-navbar {
+    border-bottom: 1px solid #F0F0F0;
+    transition: background 300ms ease, box-shadow 300ms ease;
+}
+
+.dh-navbar.scrolled {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 1px 12px rgba(0, 0, 0, 0.06);
+}
+
+.dh-nav-link {
+    position: relative;
+    color: var(--dh-text) !important;
+    text-decoration: none;
+    font-size: 0.88rem;
+    padding-bottom: 2px;
+}
+
+.dh-nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background: #D4006A;
+    transition: width 250ms ease;
+}
+
+.dh-nav-link:hover::after,
+.dh-nav-link.active::after {
+    width: 100%;
+}
+
+.dh-nav-link.active {
+    color: #D4006A !important;
+}
+
+/* === FOOTER ==================================================== */
+.dh-footer {
+    background-color: #151515;
+    color: #9CA3AF;
+    border-top: 3px solid #D4006A;
+}
+
+.dh-footer-link {
+    color: #9CA3AF;
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: color 200ms ease;
+}
+
+.dh-footer-link:hover {
+    color: #D4006A;
+}
+
+/* === CARDS DE PRODUCTO ========================================= */
+.dh-product-card {
+    position: relative;
+    background: #fff;
+    border-radius: 0;
+    transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.dh-product-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #D4006A;
+    transform: scaleX(0);
+    transition: transform 300ms ease;
+    transform-origin: left;
+}
+
+.dh-product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.dh-product-card:hover::after {
+    transform: scaleX(1);
+}
+
+/* Contenedor imagen — formato editorial 3:4 */
+.dh-product-img {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    background: #F7F7F7;
+}
+
+.dh-product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 400ms ease;
+}
+
+.dh-product-card:hover .dh-product-img img {
+    transform: scale(1.03);
+}
+
+/* Nombre del producto */
+.dh-product-name {
+    font-weight: 400;
+    color: var(--dh-muted);
+    font-size: 0.9rem;
+    line-height: 1.3;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* Precio del producto */
+.dh-product-price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dh-text);
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* === HERO — CATEGORÍAS ========================================= */
+.dh-category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--dh-text);
+    border-bottom: 3px solid transparent;
+    transition: background 300ms ease, color 300ms ease, border-color 300ms ease;
+}
+
+.dh-category-card:hover {
+    background: #111827 !important;
+    color: #fff !important;
+    border-bottom-color: #D4006A;
+}
+
+.dh-category-card .dh-cat-arrow {
+    opacity: 0;
+    color: #D4006A;
+    font-size: 1.2rem;
+    transition: opacity 250ms ease;
+}
+
+.dh-category-card:hover .dh-cat-arrow {
+    opacity: 1;
+}
+
+.dh-category-card .dh-cat-icon {
+    color: var(--dh-muted);
+    transition: color 300ms ease;
+}
+
+.dh-category-card:hover .dh-cat-icon {
+    color: #D4006A;
+}
+
+/* Línea decorativa vertical magenta (hero) */
+.dh-hero-line {
+    width: 3px;
+    height: 60px;
+    background: #D4006A;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+/* === BADGES DE ESTADO DE PEDIDO ================================ */
+.dh-status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 2px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.dh-badge-processing { background: #FEF3C7; color: #92400E; }
+.dh-badge-shipped    { background: #DBEAFE; color: #1E40AF; }
+.dh-badge-delivered  { background: #D1FAE5; color: #065F46; }
+.dh-badge-cancelled  { background: #FEE2E2; color: #991B1B; }
+.dh-badge-default    { background: #F3F4F6; color: #374151; }
+
+/* === TIMELINE DE PEDIDO ======================================== */
+.dh-timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.dh-timeline-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.dh-timeline-dot.active {
+    background: #D4006A;
+}
+
+/* === FORMULARIOS =============================================== */
+.dh-input {
+    border-radius: 2px;
+    border: 1px solid #E5E7EB;
+    font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.dh-input:focus {
+    border-color: #D4006A;
+    box-shadow: 0 0 0 2px #FBE9F2;
+    outline: none;
+}
+
+/* === ADMIN ===================================================== */
+.dh-admin-metric-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--dh-text);
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+.dh-admin-table th {
+    padding: 14px 24px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--dh-muted);
+    border: none;
+    border-bottom: 2px solid #F0F0F0;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.dh-admin-table td {
+    padding: 16px 24px;
+    border: none;
+    border-bottom: 1px solid #F7F7F7;
+    vertical-align: middle;
+}
+
+.dh-admin-active-item {
+    border-left: 3px solid #D4006A;
+    padding-left: 12px;
 }
