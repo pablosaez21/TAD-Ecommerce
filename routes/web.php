@@ -4,6 +4,8 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -36,4 +38,27 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/profile/addresses/{addressId}', [ProfileController::class, 'destroyAddress'])->name('profile.addresses.destroy');
     Route::post('/profile/language', [ProfileController::class, 'updateLanguage'])->name('profile.language.update');
     Route::get('/profile/orders', [ProfileController::class, 'orders'])->name('profile.orders');
+    
+
+    // Autenticación
+    Route::get('/home', function () {
+        return view('auth.dashboard');
+    })->middleware('auth');
+
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    });
+
+    // Admin
+    Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/', [DashboardController::class, 'index'])
+            ->name('dashboard');
+
+        Route::resource('products', AdminProductController::class);
+
+    });
 });

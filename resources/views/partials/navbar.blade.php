@@ -57,7 +57,7 @@
 
                 @auth
                     @if (auth()->user()->role === 'admin')
-                        <a href="#" class="text-decoration-none" {{-- route pendiente: admin.index --}}
+                        <a href="{{ route('admin.dashboard') }}" class="text-decoration-none" {{-- route pendiente: admin.index --}}
                            style="color: #D4006A; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.5px;">
                             <i class="bi bi-shield-lock me-1"></i>Admin
                         </a>
