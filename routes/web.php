@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -9,10 +10,17 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('home');
+    $featuredProducts = \App\Models\Product::where('active', true)
+        ->inRandomOrder()
+        ->take(4)
+        ->get();
+
+    return view('home', compact('featuredProducts'));
 })->name('home');
 
 Route::resource('products', ProductController::class);
+
+Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
 
 // Carrito — accesible sin login (sesión)
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

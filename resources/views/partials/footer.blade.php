@@ -16,16 +16,10 @@
                 </h6>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2">
-                        <a href="{{ route('products.index') }}" class="dh-footer-link">Colecciones</a>
+                        <a href="{{ route('home') }}" class="dh-footer-link">Inicio</a>
                     </li>
                     <li class="mb-2">
-                        <a href="#" class="dh-footer-link">Mujer</a> {{-- route pendiente --}}
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="dh-footer-link">Hombre</a> {{-- route pendiente --}}
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="dh-footer-link">Ofertas</a> {{-- route pendiente --}}
+                        <a href="{{ route('products.index') }}" class="dh-footer-link">Categorías</a>
                     </li>
                 </ul>
             </div>
