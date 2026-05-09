@@ -1,4 +1,4 @@
-@extends('layouts.layout')
+@extends('layouts.app')
 
 @section('title', __('profile.addresses_title') . ' — Double Helix')
 
