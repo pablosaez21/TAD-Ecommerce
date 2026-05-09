@@ -11,50 +11,103 @@ use Illuminate\Support\Str;
 
 class SportStoreSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
+        // ── Categorías ───────────────────────────────────────────
         $categories = collect([
-            ['name' => 'Running', 'description' => 'Ropa y accesorios para correr.'],
-            ['name' => 'Fitness', 'description' => 'Productos para entrenamiento funcional y gimnasio.'],
-            ['name' => 'Tennis', 'description' => 'Equipamiento y ropa para tenis.'],
-        ])->map(fn (array $category) => Category::query()->updateOrCreate(
-            ['slug' => Str::slug($category['name'])],
-            [
-                'name' => $category['name'],
-                'description' => $category['description'],
-            ]
+            ['name' => 'Running',   'description' => 'Ropa y accesorios para correr.'],
+            ['name' => 'Fitness',   'description' => 'Productos para entrenamiento funcional y gimnasio.'],
+            ['name' => 'Lifestyle', 'description' => 'Ropa deportiva para el día a día.'],
+        ])->map(fn (array $cat) => Category::query()->updateOrCreate(
+            ['slug' => Str::slug($cat['name'])],
+            ['name' => $cat['name'], 'description' => $cat['description']]
         ));
 
+        // ── Productos ────────────────────────────────────────────
         $products = [
+            // Fitness
             [
-                'name' => 'Camiseta Dry-Fit Runner',
-                'description' => 'Camiseta ligera y transpirable para running.',
-                'price' => 29.90,
-                'stock' => 120,
-                'active' => true,
-                'image' => 'products/running-shirt.jpg',
-                'categories' => ['running'],
+                'name'        => 'Guantes de Entrenamiento',
+                'description' => 'Guantes con agarre reforzado y muñequera.',
+                'price'       => 19.99,
+                'stock'       => 60,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['fitness'],
             ],
             [
-                'name' => 'Leggings Pro Fitness',
-                'description' => 'Leggings elasticos de compresion para entrenamientos intensos.',
-                'price' => 44.50,
-                'stock' => 80,
-                'active' => true,
-                'image' => 'products/fitness-leggings.jpg',
-                'categories' => ['fitness'],
+                'name'        => 'Banda de Resistencia Set',
+                'description' => 'Set de 5 bandas elásticas de distintas resistencias.',
+                'price'       => 24.99,
+                'stock'       => 80,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['fitness'],
             ],
             [
-                'name' => 'Polo Performance Tennis',
-                'description' => 'Polo tecnico con secado rapido para cancha.',
-                'price' => 39.00,
-                'stock' => 60,
-                'active' => true,
-                'image' => 'products/tennis-polo.jpg',
-                'categories' => ['tennis'],
+                'name'        => 'Esterilla Yoga/Pilates',
+                'description' => 'Esterilla antideslizante 6mm de grosor.',
+                'price'       => 34.99,
+                'stock'       => 50,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['fitness'],
+            ],
+            // Running
+            [
+                'name'        => 'Camiseta Técnica Dry-Fit',
+                'description' => 'Tejido transpirable de secado rápido.',
+                'price'       => 29.99,
+                'stock'       => 120,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['running'],
+            ],
+            [
+                'name'        => 'Mallas de Compresión',
+                'description' => 'Mallas largas con paneles de compresión muscular.',
+                'price'       => 44.99,
+                'stock'       => 75,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['running'],
+            ],
+            [
+                'name'        => 'Calcetines Running Pack',
+                'description' => 'Pack de 3 pares acolchados anti-rozadura.',
+                'price'       => 12.99,
+                'stock'       => 200,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['running'],
+            ],
+            // Lifestyle
+            [
+                'name'        => 'Sudadera Double Helix',
+                'description' => 'Sudadera con capucha en rosa y negro.',
+                'price'       => 59.99,
+                'stock'       => 60,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['lifestyle'],
+            ],
+            [
+                'name'        => 'Mochila Urban Sport 25L',
+                'description' => 'Mochila con compartimento para portátil y zapatillas.',
+                'price'       => 49.99,
+                'stock'       => 35,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['lifestyle'],
+            ],
+            [
+                'name'        => 'Botella Térmica 750ml',
+                'description' => 'Acero inoxidable, mantiene frío 24h.',
+                'price'       => 27.99,
+                'stock'       => 90,
+                'active'      => true,
+                'image'       => null,
+                'categories'  => ['lifestyle'],
             ],
         ];
 
@@ -63,10 +116,10 @@ class SportStoreSeeder extends Seeder
                 ['name' => $data['name']],
                 [
                     'description' => $data['description'],
-                    'price' => $data['price'],
-                    'stock' => $data['stock'],
-                    'active' => $data['active'],
-                    'image' => $data['image'],
+                    'price'       => $data['price'],
+                    'stock'       => $data['stock'],
+                    'active'      => $data['active'],
+                    'image'       => $data['image'],
                 ]
             );
 
@@ -78,12 +131,23 @@ class SportStoreSeeder extends Seeder
             $product->categories()->sync($categoryIds);
         }
 
+        // ── Usuarios ─────────────────────────────────────────────
         User::query()->updateOrCreate(
-            ['email' => 'admin@sportstore.com'],
+            ['email' => 'admin@doublehelix.com'],
             [
-                'name' => 'Administrador SportStore',
+                'name'     => 'Administrador',
                 'password' => Hash::make('password'),
-                'role' => 'admin',
+                'role'     => 'admin',
+                'language' => 'es',
+            ]
+        );
+
+        User::query()->updateOrCreate(
+            ['email' => 'usuario@doublehelix.com'],
+            [
+                'name'     => 'Usuario de prueba',
+                'password' => Hash::make('password'),
+                'role'     => 'user',
                 'language' => 'es',
             ]
         );
