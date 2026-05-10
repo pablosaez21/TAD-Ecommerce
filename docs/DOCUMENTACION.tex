@@ -9,7 +9,8 @@
 \usepackage{listings}
 \usepackage{tabularx}
 \usepackage{booktabs}
-
+\usepackage{xcolor}
+\definecolor{colorFondoLogo}{rgb}{0.88, 0.88, 0.88}
 % Configuración de listings para mostrar correctamente código PHP
 \setcounter{tocdepth}{2}
 \lstset{
@@ -20,10 +21,15 @@
   stepnumber=1,
   numbersep=5pt,
   breaklines=true,
-  breakatwhitespace=true,
+  breakatwhitespace=false,
   postbreak=\mbox{\textcolor{magentaDark}{$\hookrightarrow$}\space},
   columns=fullflexible,
   keepspaces=true,
+  frame=single,
+  framerule=0.2pt,
+  xleftmargin=0.4em,
+  aboveskip=0.8em,
+  belowskip=0.8em,
   showstringspaces=false,
   tabsize=4
 }
@@ -48,12 +54,40 @@
 
 \tableofcontents
 \cleardoublepage
-% Nota: compile el fichero dos veces si el índice no aparece actualizado.
-% Ejemplo: lualatex DOCUMENTACION.tex && lualatex DOCUMENTACION.tex
+
 
 \chapter{Resumen ejecutivo}
 
 TAD E-commerce Magenta es una aplicación de comercio electrónico desarrollada con \textbf{Laravel 9} que soporta catálogo de productos, carrito en sesión, proceso de checkout con transacciones ACID, gestión de direcciones, panel administrativo y sistema multiidioma (es/en). Esta documentación recoge diseño, decisiones técnicas, estructura, instrucciones de instalación y uso, pruebas y conclusiones.
+
+\chapter{Identidad de marca}
+
+\section{Concepto de marca}
+
+La marca \textbf{Magenta} se define alrededor de tres ideas: energía, cercanía y modernidad técnica. En el contexto del e-commerce, esto se traduce en una interfaz clara, un proceso de compra rápido y una narrativa visual coherente en todo el sitio.
+
+\section{Psicología del color}
+
+El color principal del proyecto es \texttt{\#FF007F} (magenta). La elección se justifica por:
+\begin{itemize}
+  \item \textbf{Energía y dinamismo}: refuerza una percepción activa, alineada con catálogo deportivo.
+  \item \textbf{Diferenciación}: evita paletas neutras típicas de tiendas genéricas.
+  \item \textbf{Reconocimiento de marca}: facilita consistencia visual en navegación, botones y estados.
+\end{itemize}
+
+Se complementa con \texttt{\#C80064} para contraste y jerarquía visual en enlaces y títulos.
+
+\section{Logo}
+
+\begin{figure}[htbp]
+  \centering
+  \colorbox{colorFondoLogo}{ 
+    \includegraphics[width=0.5\textwidth]{logo_double_helix.png}
+  }
+  \caption{Logotipo de Double Helix.}
+\end{figure}
+
+Esta versión representa el logotipo verbal utilizado en la documentación y puede sustituirse por un recurso corporativo cuando se incorpore al repositorio.
 
 \chapter{Objetivos y alcance}
 
@@ -68,6 +102,40 @@ TAD E-commerce Magenta es una aplicación de comercio electrónico desarrollada 
 \section{Alcance}
 
 El alcance cubre las funcionalidades implementadas en el repositorio actual: modelos, migraciones, controladores, vistas Blade, rutas, internacionalización y envíos de correo (Mailables). No incluye integraciones de terceros en producción (pasarelas de pago reales) aunque la arquitectura permite su incorporación.
+
+\chapter{Casos de uso}
+
+\section{Actores}
+\begin{itemize}
+  \item \textbf{Visitante}: navega catálogo y detalle sin autenticación.
+  \item \textbf{Usuario autenticado}: compra, guarda favoritos, gestiona perfil y pedidos.
+  \item \textbf{Administrador}: gestiona catálogo y supervisa métricas en dashboard.
+\end{itemize}
+
+\section{Casos de uso principales}
+
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Caso} & \textbf{Descripción ajustada al código actual} \\
+\midrule
+UC-01 Ver catálogo & El usuario consulta \texttt{/products} con paginación y filtros por categoría. \\
+UC-02 Gestionar carrito & En \texttt{CartController}, el sistema añade o elimina productos en sesión, limitando cantidad al stock. \\
+UC-03 Checkout & En \texttt{CartController::checkout}, se valida address y items, se bloquea stock con \texttt{lockForUpdate()}, se crea orden, líneas y pago en una transacción. \\
+UC-04 Gestión de perfil & En \texttt{ProfileController}, el usuario administra direcciones, idioma y consulta pedidos. \\
+UC-05 Favoritos & En \texttt{FavoriteController}, el usuario alterna favoritos sobre productos. \\
+UC-06 Administración & Rutas protegidas por \texttt{auth + admin} para dashboard y CRUD de productos/categorías. \\
+\bottomrule
+\end{tabularx}
+
+\section{Caso de uso crítico: Comprar productos}
+
+\begin{enumerate}
+  \item Usuario autenticado abre checkout.
+  \item Sistema valida dirección del usuario y contenido de \texttt{items}.
+  \item Por cada item, bloquea fila del producto y verifica stock.
+  \item Crea \texttt{orders}, \texttt{order\_lines} y \texttt{payments} dentro de \texttt{DB::transaction}.
+  \item Vacía carrito de sesión y envía \texttt{OrderConfirmationMail}.
+\end{enumerate}
 
 \chapter{Arquitectura y diseño}
 
@@ -125,6 +193,16 @@ Observaciones:
 \end{itemize}
 
 \section{Esquema de base de datos}
+
+\subsection{Diagrama UML de base de datos}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{uml.png}
+  \caption{Modelo UML de base de datos (fuente: \texttt{docs/uml.png}).}
+\end{figure}
+
+El diagrama refleja las relaciones implementadas en las migraciones y modelos: \texttt{User-Order} (1:N), \texttt{Order-OrderLine} (1:N), \texttt{Order-Payment} (1:1) y relaciones N:M mediante tablas pivote (p.ej. \texttt{favorites}, \texttt{category\_product}).
 
 Se aplica normalización hasta 3NF; las tablas pivot eliminan redundancia en relaciones N:M (ej. \texttt{favorites}, \texttt{category\_product}, \texttt{discount\_product}). Las decisiones principales:
 
@@ -281,41 +359,89 @@ php artisan serve
 over: http://localhost:8000
 \end{verbatim}
 
-\chapter{Configuración de correo}
-
-Se recomienda Mailtrap para desarrollo o configuraciones SMTP en .env (MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD).
-
-\chapter{Pruebas}
-
-\section{Pruebas unitarias y funcionales}
-
-Tests incluidos en \texttt{tests/Feature} y \texttt{tests/Unit} cubren: modelos, checkout, creación de órdenes y validaciones básicas. Ejecutar:
-
-\begin{verbatim}
-php artisan test
-\end{verbatim}
-
 \chapter{Seguridad}
 
+La seguridad del proyecto no se limita a una sola capa, sino que se distribuye en autenticación, autorización, validación, control de concurrencia y protección de datos de negocio.
+
+\section{Autenticación y contraseñas}
+
+El sistema usa Laravel Fortify para centralizar registro, inicio de sesión, cambio de contraseña y, si se activa, autenticación en dos pasos. Las contraseñas nunca se almacenan en texto plano, sino mediante hashing seguro gestionado por Laravel. Esto reduce el impacto de una posible fuga de base de datos y permite reutilizar mecanismos nativos del framework.
+
+\section{Autorización por rol}
+
+Las rutas administrativas están protegidas por middleware y por la comprobación del rol del usuario. En la práctica, esto evita que un usuario normal pueda acceder al panel de administración, editar productos o visualizar estadísticas internas. El control está alineado con el campo \texttt{role} del modelo \texttt{User}.
+
+\section{Protección frente a ataques web}
+
 \begin{itemize}
-  \item Contraseñas cifradas (bcrypt).
-  \item Protección CSRF en formularios (Blade @csrf).
-  \item Validación en servidores mediante FormRequest.
-  \item Middleware de autorización (admin) para rutas sensibles.
+  \item \textbf{CSRF:} los formularios Blade incluyen token \texttt{@csrf}, evitando peticiones forjadas desde sitios externos.
+  \item \textbf{Validación server-side:} las peticiones se validan antes de persistir datos, lo que impide enviar valores vacíos, tipos incorrectos o IDs inexistentes.
+  \item \textbf{Escape en vistas:} Blade escapa la salida por defecto, reduciendo el riesgo de XSS cuando se muestran nombres, descripciones o mensajes.
 \end{itemize}
 
-\chapter{Eliminación de contenido irrelevante}
+\section{Seguridad en el checkout}
 
-Se han eliminado todas las referencias a la documentación y recursos del proyecto previo ("Sabores de Barrio"). No quedan inclusiones de imágenes externas que pertenecieran a ese proyecto. Si existen ficheros de imagen en el repositorio que no pertenecen a TAD E-commerce y deseas que los borre del disco, indícalo y procederé con cuidado.
+El punto más sensible del sistema es la compra. Por eso, el \texttt{CartController} valida dirección, métodos de pago y contenido del carrito antes de abrir la transacción. Además, cada producto se bloquea con \texttt{lockForUpdate()} para evitar que dos compras simultáneas resten el mismo stock. Si el stock no alcanza, la operación falla antes de completar la orden.
+
+\section{Integridad y trazabilidad}
+
+\begin{itemize}
+  \item El pedido, sus líneas y su pago se crean dentro de la misma transacción, evitando estados inconsistentes.
+  \item El stock se decrementa solo tras confirmar que el producto está activo y disponible.
+  \item El correo de confirmación se envía después de confirmar la compra, evitando notificaciones falsas.
+\end{itemize}
+
+\section{Medidas adicionales recomendables}
+
+Aunque el proyecto ya es seguro para un entorno académico, en un escenario de producción se recomienda añadir:
+
+\begin{itemize}
+  \item Rate limiting en login y checkout.
+  \item Logs de auditoría para acciones administrativas.
+  \item Política de contraseñas más estricta si el requisito del curso lo exige.
+  \item Validación de ficheros subidos para imágenes de productos.
+\end{itemize}
 
 \chapter{Decisiones de mejoras futuras}
 
+El proyecto está preparado para crecer sin reescribir su base principal. Las siguientes mejoras son las más naturales y útiles a partir del código existente:
+
+\section{Pagos y confirmación real}
+
+La versión actual guarda el método de pago y marca el pago como \texttt{paid} dentro de la propia aplicación. El siguiente paso lógico sería integrar una pasarela real como Stripe o PayPal, de forma que el estado del pago dependa de una respuesta externa verificada mediante webhook. Esto permitiría separar mejor la intención de compra del pago efectivo.
+
+\section{Carrito persistente}
+
+Actualmente el carrito vive en sesión, lo cual es apropiado para un proyecto simple y rápido. Como mejora, podría guardarse en base de datos para que el usuario recupere su carrito desde otro dispositivo o después de cerrar sesión. Esta evolución sería especialmente útil en tiendas con usuarios recurrentes.
+
+\section{Gestión avanzada de pedidos}
+
+Se podría ampliar el ciclo de vida del pedido con más estados y trazabilidad: pendiente de pago, pagado, preparando, enviado, entregado y cancelado. Esto encaja con la tabla \texttt{orders} y permitiría al panel administrativo gestionar mejor el proceso logístico.
+
+\section{Búsqueda, filtros y recomendación}
+
+El catálogo ya parte de una estructura limpia de productos y categorías. Sobre esa base se puede añadir:
+
 \begin{itemize}
-  \item Integrar pasarela de pago real (Stripe/PayPal).
-  \item Carrito persistente en BD para sesión multi-dispositivo.
-  \item API REST y microservicios para pagos y notificaciones.
-  \item Tests de integración y CI/CD en GitHub Actions.
+  \item Buscador por nombre o descripción.
+  \item Filtros combinados por categoría, precio y estado.
+  \item Productos relacionados o recomendados por historial de compra.
 \end{itemize}
+
+\section{Calidad, pruebas y despliegue}
+
+Para acercar el proyecto a un entorno profesional, conviene reforzar la calidad técnica con:
+
+\begin{itemize}
+  \item Tests de integración para checkout, favoritos y administración.
+  \item CI/CD automático con GitHub Actions.
+  \item Seeds más ricos para demostrar escenarios de negocio reales.
+  \item Revisión de accesibilidad y rendimiento en móviles.
+\end{itemize}
+
+\section{Internacionalización ampliada}
+
+El soporte actual en español e inglés puede crecer con más traducciones en componentes dinámicos, mensajes de error y correos. Esto haría que la experiencia sea realmente consistente en ambos idiomas, no solo en la interfaz principal.
 
 \chapter{Apéndice: fragmentos de código relevantes}
 
