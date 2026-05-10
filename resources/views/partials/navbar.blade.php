@@ -74,6 +74,12 @@
                                     <i class="bi bi-geo-alt me-2" style="color: #D4006A;"></i>{{ __('nav.my_profile') }}
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ route('favorites.index') }}"
+                                style="font-size: 0.85rem; color: var(--dh-text);">
+                                    <i class="bi bi-heart me-2" style="color: #D4006A;"></i>Mis favoritos
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider my-1" style="border-color: #F0F0F0;"></li>
                             @if (Route::has('logout'))
                                 <li>

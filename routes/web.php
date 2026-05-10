@@ -33,7 +33,11 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 
     // Favoritos
-    Route::post('/favorites/{product}/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    Route::middleware('auth')->group(function () {
+        Route::post('/favorites/{product}/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    });
+
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index')->middleware('auth');
 
     // Pedidos
     Route::get('/orders/{order}', [ProfileController::class, 'showOrder'])->name('orders.show');
@@ -69,4 +73,9 @@ Route::middleware('auth')->group(function (): void {
         Route::resource('products', AdminProductController::class);
 
     });
+
+    // Verificar email
+    Route::get('/home', function () {
+        return view('auth.dashboard');
+    })->middleware(['auth','verified']);
 });

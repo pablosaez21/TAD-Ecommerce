@@ -24,4 +24,14 @@ class FavoriteController extends Controller
 
         return back()->with('status', $message);
     }
+
+    public function index()
+    {
+        $products = auth()->user()
+            ->favoriteProducts()
+            ->latest()
+            ->paginate(12);
+
+        return view('favorites.index', compact('products'));
+    }
 }
