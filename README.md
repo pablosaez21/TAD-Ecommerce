@@ -24,7 +24,8 @@
 *   **Autenticación Segura:** Implementada con Laravel Fortify para un control de acceso robusto.
 *   **Diseño Responsive:** Adaptado a cualquier dispositivo gracias a Bootstrap 5.
 *   **Simulación de Correo:** Integración con Mailtrap para el envío de notificaciones y confirmaciones.
-
+*   **Multi-idioma:** Soporte completo para **Español** e **Inglés**, permitiendo que usuarios de distintos países naveguen cómodamente por la tienda.
+*   **Datos de Prueba (Seeders):** Incluye generadores de datos automáticos para poblar la tienda con diversos tipos de productos y categorías, facilitando las pruebas de desarrollo.   
 ---
 
 ## Integrantes del Grupo
