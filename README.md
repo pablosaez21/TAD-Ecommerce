@@ -1,58 +1,66 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+---
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Double Helix: Deporte en nuestro ADN
 
-## About Laravel
+¡Bienvenido a **Double Helix**! Un e-commerce deportivo de alto rendimiento desarrollado como proyecto académico. Nuestra plataforma fusiona la potencia de Laravel con una interfaz ágil basada en Bootstrap 5.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack Tecnológico
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Componente | Tecnología |
+| :--- | :--- |
+| **Backend** | ![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=flat-square&logo=laravel&logoColor=white) **9** (PHP 8.1+) |
+| **Frontend** | ![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=flat-square&logo=bootstrap&logoColor=white) **5** + Blade Templates |
+| **Base de Datos** | ![SQLite](https://img.shields.io/badge/SQLite-07405E?style=flat-square&logo=sqlite&logoColor=white) |
+| **Autenticación** | Laravel Fortify |
+| **Testing Email** | Mailtrap |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Características Principales
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+*   **Gestión de Catálogo:** Navegación fluida por productos deportivos.
+*   **Autenticación Segura:** Implementada con Laravel Fortify para un control de acceso robusto.
+*   **Diseño Responsive:** Adaptado a cualquier dispositivo gracias a Bootstrap 5.
+*   **Simulación de Correo:** Integración con Mailtrap para el envío de notificaciones y confirmaciones.
+*   **Multi-idioma:** Soporte completo para **Español** e **Inglés**, permitiendo que usuarios de distintos países naveguen cómodamente por la tienda.
+*   **Datos de Prueba (Seeders):** Incluye generadores de datos automáticos para poblar la tienda con diversos tipos de productos y categorías, facilitando las pruebas de desarrollo.   
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Integrantes del Grupo
 
-## Agentic Development
+Nuestro equipo de desarrollo está compuesto por:
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+*   **Pablo Sáez Morales**
+*   **Oleksandr B. Baranets**
+*   **Nicolás Porra Collado**
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
-```
+## Instalación y Configuración
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Sigue estos pasos para levantar el proyecto en tu entorno local:
 
-## Contributing
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone https://github.com/tu-usuario/double-helix.git
+    cd double-helix
+    ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2.  **Instalar dependencias:**
+    ```bash
+    composer install
+    npm install && npm run dev
+    ```
 
-## Code of Conduct
+3.  **Configuración del entorno:**
+    *   Copia el archivo `.env.example` a `.env`.
+    *   Configura tu base de Datos SQLite.
+    *   Añade tus credenciales de **Mailtrap** en el `.env`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+4.  **Migraciones y Key:**
+    ```bash
+    php artisan key:generate
+    php artisan migrate --seed
+    ```

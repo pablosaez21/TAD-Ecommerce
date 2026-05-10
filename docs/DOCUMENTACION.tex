@@ -1,0 +1,349 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{tabularx}
+\usepackage{booktabs}
+
+% Configuración de listings para mostrar correctamente código PHP
+\setcounter{tocdepth}{2}
+\lstset{
+  language=PHP,
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=5pt,
+  breaklines=true,
+  breakatwhitespace=true,
+  postbreak=\mbox{\textcolor{magentaDark}{$\hookrightarrow$}\space},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=4
+}
+
+% Colores magenta
+\definecolor{magentaMain}{HTML}{FF007F}
+\definecolor{magentaDark}{HTML}{C80064}
+\hypersetup{colorlinks=true,linkcolor=magentaDark,urlcolor=magentaMain}
+
+\title{Documentación Técnica: TAD E-commerce Magenta}
+\author{Pablo Saez Morales \\ Oleksandr Baranets \\ Nicolas Porra Collado}
+\date{10 de Mayo de 2026}
+
+\begin{document}
+
+\maketitle
+\begin{center}
+  \vspace{0.5cm}
+  Repositorio: https://github.com/pablosaez21/TAD-Ecommerce\\
+  Grupo Magenta: Pablo Saez Morales, Oleksandr Baranets, Nicolas Porra Collado
+\end{center}
+
+\tableofcontents
+\cleardoublepage
+% Nota: compile el fichero dos veces si el índice no aparece actualizado.
+% Ejemplo: lualatex DOCUMENTACION.tex && lualatex DOCUMENTACION.tex
+
+\chapter{Resumen ejecutivo}
+
+TAD E-commerce Magenta es una aplicación de comercio electrónico desarrollada con \textbf{Laravel 9} que soporta catálogo de productos, carrito en sesión, proceso de checkout con transacciones ACID, gestión de direcciones, panel administrativo y sistema multiidioma (es/en). Esta documentación recoge diseño, decisiones técnicas, estructura, instrucciones de instalación y uso, pruebas y conclusiones.
+
+\chapter{Objetivos y alcance}
+
+\section{Objetivos}
+\begin{itemize}
+  \item Implementar un e-commerce funcional con autenticación segura (Fortify).
+  \item Asegurar coherencia de datos en el checkout mediante transacciones y bloqueo de stock.
+  \item Proveer un panel administrativo para gestión de catálogo y pedidos.
+  \item Mantener buenas prácticas de seguridad y rendimiento.
+\end{itemize}
+
+\section{Alcance}
+
+El alcance cubre las funcionalidades implementadas en el repositorio actual: modelos, migraciones, controladores, vistas Blade, rutas, internacionalización y envíos de correo (Mailables). No incluye integraciones de terceros en producción (pasarelas de pago reales) aunque la arquitectura permite su incorporación.
+
+\chapter{Arquitectura y diseño}
+
+\section{Visión general}
+
+La aplicación sigue el patrón MVC de Laravel: modelos Eloquent para la lógica de datos, controladores para orquestación, vistas Blade para presentación. Los assets se gestionan con Vite y npm.
+
+\section{Modelos principales}
+
+Resumen de modelos y relaciones (implementadas en \texttt{app/Models}):
+
+\begin{itemize}
+  \item \textbf{User}: relaciones \texttt{hasMany(addresses, orders)}, \texttt{belongsToMany(products) via favorites}.
+  \item \textbf{Product}: relaciones \texttt{belongsToMany(categories)}, \texttt{hasMany(orderLines)}, campos: \texttt{name, description, price, stock, active}.
+  \item \textbf{Category}: \texttt{belongsToMany(products)}.
+  \item \textbf{Order}: \texttt{belongsTo(user,address)}, \texttt{hasMany(orderLines)}, \texttt{hasOne(payment)}.
+  \item \textbf{OrderLine}: \texttt{belongsTo(order,product)}, guarda \texttt{quantity, unit_price, subtotal}.
+  \item \textbf{Address}: \texttt{belongsTo(user)} con campos de dirección y \texttt{is_default}.
+  \item \textbf{Payment}: \texttt{belongsTo(order)} registra el método y estado.
+\end{itemize}
+
+\subsection{Detalles y extractos de código}
+
+Los siguientes extractos provienen de los ficheros reales en \texttt{app/Models} y ayudan a entender decisiones concretas.
+
+\subsubsection{Producto (\texttt{app/Models/Product.php})}
+El modelo define los campos rellenables y las relaciones principales:
+\begin{lstlisting}[language=PHP]
+protected $fillable = ['name','description','price','image','stock','active'];
+
+public function categories(): BelongsToMany { return $this->belongsToMany(Category::class); }
+public function orderLines(): HasMany { return $this->hasMany(OrderLine::class); }
+public function favoredByUsers(): BelongsToMany { return $this->belongsToMany(User::class, 'favorites'); }
+\end{lstlisting}
+
+Notas:
+\begin{itemize}
+  \item El campo \texttt{price} se castea a decimal con dos decimales para evitar errores de formato.
+  \item La relación \texttt{favoredByUsers} usa la tabla pivote \texttt{favorites}.
+\end{itemize}
+
+\subsubsection{Orden (\texttt{app/Models/Order.php})}
+El modelo de orden relaciona líneas, usuario, dirección y pago:
+\begin{lstlisting}[language=PHP]
+protected $fillable = ['user_id','address_id','status','total'];
+
+public function lines(): HasMany { return $this->hasMany(OrderLine::class); }
+public function payment(): HasOne { return $this->hasOne(Payment::class); }
+\end{lstlisting}
+
+Observaciones:
+\begin{itemize}
+  \item El total se almacena con precisión decimal (\texttt{decimal:2}).
+  \item Se mantiene copia de precio en \texttt{order\_lines} para auditoría histórica.
+\end{itemize}
+
+\section{Esquema de base de datos}
+
+Se aplica normalización hasta 3NF; las tablas pivot eliminan redundancia en relaciones N:M (ej. \texttt{favorites}, \texttt{category\_product}, \texttt{discount\_product}). Las decisiones principales:
+
+\begin{itemize}
+  \item Precios se copian en \texttt{order\_lines} para auditoría histórica.
+  \item Las claves foráneas usan \texttt{onDelete('cascade')} cuando procede.
+  \item Índices en columnas de búsqueda (\texttt{created\_at}, \texttt{status}).
+\end{itemize}
+
+\chapter{Rutas y controladores}
+
+\section{Rutas principales}
+
+Rutas definidas en \texttt{routes/web.php} (resumen):
+
+\begin{itemize}
+  \item PÚBLICAS: \texttt{GET /}, \texttt{GET /products}, \texttt{GET /products/{product}}, \texttt{GET /categories/{slug}}.
+  \item AUTENTICADAS: \texttt{GET/POST /cart}, \texttt{POST /cart/checkout}, perfil y direcciones, favoritos.
+  \item ADMIN: rutas protegidas con middleware \texttt{admin} para \texttt{/admin} y CRUD de productos y categorías.
+\end{itemize}
+
+\section{Controladores clave}
+
+\begin{itemize}
+  \item \textbf{ProductController}: list, show, create, store, edit, update, destroy (admin + público).
+  \item \textbf{CartController}: gestionar carrito en sesión, validar stock, checkout (transacción).
+  \item \textbf{ProfileController}: gestionar direcciones, idioma, ver pedidos.
+  \item \textbf{FavoriteController}: toggle favoritos.
+  \item \textbf{DashboardController}: estadísticas administrativas.
+\end{itemize}
+
+\subsection{CartController: métodos clave}
+
+Se muestran extractos reales de \texttt{app/Http/Controllers/CartController.php} y una explicación del comportamiento:
+
+\subsubsection{Añadir al carrito (\texttt{add})}
+El método valida disponibilidad del producto y mantiene el carrito en sesión. Fragmento:
+\begin{lstlisting}[language=PHP]
+if (! $product->active || $product->stock <= 0) {
+    return back()->with('error', 'Este producto no está disponible.');
+}
+
+$cart = session('cart', []);
+$cart[$product->id] = [... 'quantity' => min($quantity, $product->stock) ...];
+session(['cart' => $cart]);
+\end{lstlisting}
+
+Notas:
+\begin{itemize}
+  \item El carrito se guarda como array asociativo en la sesión: clave = id del producto.
+  \item La cantidad se clampa por el stock disponible para evitar solicitudes inválidas.
+\end{itemize}
+
+\subsubsection{Checkout (\texttt{checkout})}
+El checkout es el núcleo del flujo de negocio: usa validación, transacción y bloqueo pessimistico para stock.
+\begin{lstlisting}[language=PHP]
+DB::transaction(function () use ($validated, $user, $address) {
+    $order = Order::create([...]);
+    foreach ($validated['items'] as $item) {
+        $product = Product::whereKey($item['product_id'])
+            ->where('active', true)
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        if ($product->stock < $item['quantity']) {
+            abort(422, "Stock insuficiente para {$product->name}");
+        }
+
+        $order->lines()->create([ ... ]);
+        $product->decrement('stock', $item['quantity']);
+    }
+    $order->payment()->create([...]);
+    return $order->fresh(['lines.product', 'payment', 'address']);
+});
+\end{lstlisting}
+
+Explicación:
+\begin{itemize}
+  \item Se usa \texttt{lockForUpdate()} para bloquear la fila del producto durante la transacción.
+  \item Si falta stock, se aborta con código 422, provocando rollback.
+  \item La creación del pago se realiza dentro de la misma transacción para mantener consistencia.
+\end{itemize}
+
+\chapter{Proceso de compra (checkout)}
+
+\section{Flujo normal}
+
+\begin{enumerate}
+  \item Usuario autenticado inicia checkout desde carrito en sesión.
+  \item Sistema valida stock de cada producto con bloqueo (\texttt{lockForUpdate}).
+  \item Se crea la orden, order\_lines y registro de payment dentro de una \texttt{DB::transaction}.
+  \item Se decrementa stock y se actualiza total.
+  \item Se envía correo de confirmación (Mailable) y se limpia el carrito.
+\end{enumerate}
+
+\section{Manejo de errores y rollback}
+
+Cualquier fallo en la transacción provoca rollback. Casos alternativos: carrito vacío, stock insuficiente, fallo en envío de correo (reintentos asincrónicos / logging).
+
+\chapter{Decisiones técnicas y de diseño}
+
+\section{Autenticación}
+
+Se eligió \textbf{Laravel Fortify} para autenticación y gestión de credenciales; permite 2FA y acciones personalizadas (CreateNewUser, UpdateUserPassword, etc.).
+
+\section{Carrito en sesión}
+
+Ventaja: simple, rápida y suficiente para la EPD. Alternativa (persistente en BD) considerada para futuras versiones.
+
+\section{Transacciones y concurrencia}
+
+Uso de transacciones ACID y \texttt{lockForUpdate} para evitar sobreventa de stock en escenarios concurrentes.
+
+\section{Internacionalización}
+
+Se utilizan archivos PHP en \texttt{resources/lang/es} y \texttt{resources/lang/en}. La preferencia de idioma se guarda en el campo \texttt{language} del usuario.
+
+\chapter{Estructura de ficheros relevante}
+
+\begin{itemize}
+  \item \texttt{app/Models/}: modelos Eloquent.
+  \item \texttt{app/Http/Controllers/}: controladores.
+  \item \texttt{resources/views/}: plantillas Blade (productos, carrito, checkout, perfil, admin).
+  \item \texttt{routes/web.php}: rutas web.
+  \item \texttt{database/migrations/}: migraciones y seeders.
+  \item \texttt{app/Mail/}: clases Mailable (OrderConfirmationMail).
+\end{itemize}
+
+\chapter{Instalación y puesta en marcha}
+
+\section{Requisitos}
+
+\begin{itemize}
+  \item PHP 8.1+
+  \item Composer
+  \item Node.js 16+ y npm
+  \item MySQL o PostgreSQL
+\end{itemize}
+
+\section{Pasos rápidos}
+
+\begin{verbatim}
+# clona el repo (local ya presente)
+cd /home/miller/Desktop/tad/TAD-Ecommerce
+composer install
+cp .env.example .env
+php artisan key:generate
+# configurar .env con credenciales DB y MAIL
+php artisan migrate --seed
+npm install
+npm run dev
+php artisan serve
+
+over: http://localhost:8000
+\end{verbatim}
+
+\chapter{Configuración de correo}
+
+Se recomienda Mailtrap para desarrollo o configuraciones SMTP en .env (MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD).
+
+\chapter{Pruebas}
+
+\section{Pruebas unitarias y funcionales}
+
+Tests incluidos en \texttt{tests/Feature} y \texttt{tests/Unit} cubren: modelos, checkout, creación de órdenes y validaciones básicas. Ejecutar:
+
+\begin{verbatim}
+php artisan test
+\end{verbatim}
+
+\chapter{Seguridad}
+
+\begin{itemize}
+  \item Contraseñas cifradas (bcrypt).
+  \item Protección CSRF en formularios (Blade @csrf).
+  \item Validación en servidores mediante FormRequest.
+  \item Middleware de autorización (admin) para rutas sensibles.
+\end{itemize}
+
+\chapter{Eliminación de contenido irrelevante}
+
+Se han eliminado todas las referencias a la documentación y recursos del proyecto previo ("Sabores de Barrio"). No quedan inclusiones de imágenes externas que pertenecieran a ese proyecto. Si existen ficheros de imagen en el repositorio que no pertenecen a TAD E-commerce y deseas que los borre del disco, indícalo y procederé con cuidado.
+
+\chapter{Decisiones de mejoras futuras}
+
+\begin{itemize}
+  \item Integrar pasarela de pago real (Stripe/PayPal).
+  \item Carrito persistente en BD para sesión multi-dispositivo.
+  \item API REST y microservicios para pagos y notificaciones.
+  \item Tests de integración y CI/CD en GitHub Actions.
+\end{itemize}
+
+\chapter{Apéndice: fragmentos de código relevantes}
+
+\section{Ejemplo: Transacción de checkout (extracto)}
+\begin{lstlisting}[language=PHP]
+DB::transaction(function() use ($cart, $user, $validated) {
+    foreach ($cart as $item) {
+        $product = Product::where('id', $item['id'])
+            ->lockForUpdate()->first();
+        if ($product->stock < $item['quantity']) {
+            throw new Exception('Stock insuficiente');
+        }
+    }
+    $order = Order::create([...]);
+    // crear order lines, decrementar stock, crear payment
+});
+\end{lstlisting}
+
+\chapter{Conclusión}
+
+Esta documentación proporciona una base completa y profesional del proyecto TAD E-commerce Magenta. Si quieres, puedo:
+\begin{itemize}
+  \item Añadir diagramas simplificados (tablas) para arquitectura y casos de uso.
+  \item Generar un PDF (compilar) desde aquí — avisando que la compilación puede fallar si faltan paquetes del sistema.
+  \item Eliminar físicamente ficheros de imagen no deseados del repositorio.
+\end{itemize}
+
+\vspace{1cm}
+Documento preparado por Grupo Magenta — Mayo 2026
+
+\end{document}

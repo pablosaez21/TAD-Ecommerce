@@ -1,28 +1,30 @@
 @extends('layouts.app')
 
-@section('title', 'Pedido #' . ($order->id ?? '—') . ' — Double Helix')
+@section('title', __('orders.order_title', ['id' => $order->id ?? '—']) . ' — Double Helix')
 
 @section('content')
 
 <section style="padding: 80px 0 120px; background: #F7F7F7;">
     <div class="container">
 
-        {{-- Cabecera --}}
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-5">
             <div>
-                <p class="mb-1" style="text-transform: uppercase; letter-spacing: 3px; font-size: 0.75rem; color: var(--dh-primary);">Mi cuenta</p>
+                <p class="mb-1" style="text-transform: uppercase; letter-spacing: 3px; font-size: 0.75rem; color: var(--dh-primary);">{{ __('orders.label') }}</p>
                 <h1 style="font-weight: 300; font-size: 2.2rem; color: var(--dh-text); margin-bottom: 0;">
-                    Pedido #{{ $order->id ?? '—' }}
+                    {{ __('orders.order_title', ['id' => $order->id ?? '—']) }}
                 </h1>
             </div>
             <a href="{{ route('profile.orders') }}" style="font-size: 0.85rem; color: var(--dh-muted); text-decoration: none;">
-                ← Volver a mis pedidos
+                {{ __('orders.back_to_orders') }}
             </a>
         </div>
 
-        {{-- ─── Timeline de estado ─────────────────────────────── --}}
         @php
-            $steps = ['processing' => 'Procesando', 'shipped' => 'Enviado', 'delivered' => 'Entregado'];
+            $steps = [
+                'processing' => __('orders.status_processing'),
+                'shipped'    => __('orders.status_shipped'),
+                'delivered'  => __('orders.status_delivered'),
+            ];
             $statuses = array_keys($steps);
             $currentIndex = array_search($order->status ?? 'processing', $statuses);
             if ($currentIndex === false) $currentIndex = 0;
@@ -31,7 +33,6 @@
         <div style="background: #fff; padding: 40px; margin-bottom: 32px;">
             <div class="d-flex align-items-center justify-content-between position-relative">
 
-                {{-- Línea de fondo --}}
                 <div style="position: absolute; top: 14px; left: 14px; right: 14px; height: 2px; background: #E5E7EB; z-index: 0;"></div>
 
                 @foreach ($steps as $key => $label)
@@ -59,7 +60,7 @@
             @if (($order->status ?? '') === 'cancelled')
                 <div class="text-center mt-4">
                     <span style="font-size: 0.82rem; font-weight: 600; color: #dc2626; background: #FEE2E2; padding: 6px 16px; border-radius: 2px;">
-                        Pedido cancelado
+                        {{ __('orders.cancelled_badge') }}
                     </span>
                 </div>
             @endif
@@ -67,11 +68,10 @@
 
         <div class="row g-4 align-items-start">
 
-            {{-- ─── Productos ──────────────────────────────────── --}}
             <div class="col-lg-7">
                 <div style="background: #fff; padding: 36px;">
                     <h5 class="mb-4" style="font-weight: 600; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 1px; color: var(--dh-text);">
-                        Artículos del pedido
+                        {{ __('orders.items_title') }}
                     </h5>
 
                     @forelse ($order->lines ?? [] as $line)
@@ -103,39 +103,36 @@
                             </div>
                         </div>
                     @empty
-                        <p style="color: var(--dh-muted); font-size: 0.88rem;">Sin artículos registrados.</p>
+                        <p style="color: var(--dh-muted); font-size: 0.88rem;">{{ __('orders.no_items') }}</p>
                     @endforelse
                 </div>
             </div>
 
-            {{-- ─── Datos del pedido ───────────────────────────── --}}
             <div class="col-lg-5">
 
-                {{-- Resumen económico --}}
                 <div style="background: #fff; padding: 36px; margin-bottom: 24px;">
                     <h5 class="mb-4" style="font-weight: 600; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 1px; color: var(--dh-text);">
-                        Resumen
+                        {{ __('orders.summary_title') }}
                     </h5>
                     <div class="d-flex justify-content-between mb-2" style="font-size: 0.88rem; color: var(--dh-muted);">
-                        <span>Subtotal</span>
+                        <span>{{ __('orders.subtotal') }}</span>
                         <span>{{ number_format((float) ($order->total ?? 0), 2) }} €</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3" style="font-size: 0.88rem; color: var(--dh-muted);">
-                        <span>Pago</span>
+                        <span>{{ __('orders.payment_method') }}</span>
                         <span style="text-transform: capitalize;">{{ $order->payment?->payment_method ?? '—' }}</span>
                     </div>
                     <div class="d-flex justify-content-between pt-3" style="border-top: 1px solid #F0F0F0;">
-                        <span style="font-weight: 700; color: var(--dh-text);">Total</span>
+                        <span style="font-weight: 700; color: var(--dh-text);">{{ __('orders.total') }}</span>
                         <span style="font-weight: 700; color: var(--dh-primary); font-size: 1.05rem;">
                             {{ number_format((float) ($order->total ?? 0), 2) }} €
                         </span>
                     </div>
                 </div>
 
-                {{-- Dirección de envío --}}
                 <div style="background: #fff; padding: 36px;">
                     <h5 class="mb-3" style="font-weight: 600; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 1px; color: var(--dh-text);">
-                        Dirección de envío
+                        {{ __('orders.address_title') }}
                     </h5>
                     @isset($order->address)
                         <p class="mb-0" style="font-size: 0.88rem; color: var(--dh-muted); line-height: 1.75;">
@@ -145,7 +142,7 @@
                             <span style="color: var(--dh-text);">Tel. {{ $order->address->phone }}</span>
                         </p>
                     @else
-                        <p style="font-size: 0.88rem; color: var(--dh-muted);">Sin dirección registrada.</p>
+                        <p style="font-size: 0.88rem; color: var(--dh-muted);">{{ __('orders.no_address') }}</p>
                     @endisset
                 </div>
 

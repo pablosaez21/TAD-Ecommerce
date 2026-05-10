@@ -12,9 +12,10 @@ class ProductController extends Controller
 {
     public function index(): View
     {
+        $categories = Category::orderBy('name')->get();
         $products = Product::with('categories')->latest()->paginate(12);
 
-        return view('products.index', compact('products'));
+        return view('products.index', compact('products', 'categories'));
     }
 
     public function show(Product $product): View
