@@ -148,13 +148,13 @@ La aplicación sigue el patrón MVC de Laravel: modelos Eloquent para la lógica
 Resumen de modelos y relaciones (implementadas en \texttt{app/Models}):
 
 \begin{itemize}
-  \item \textbf{User}: relaciones \texttt{hasMany(addresses, orders)}, \texttt{belongsToMany(products) via favorites}.
-  \item \textbf{Product}: relaciones \texttt{belongsToMany(categories)}, \texttt{hasMany(orderLines)}, campos: \texttt{name, description, price, stock, active}.
-  \item \textbf{Category}: \texttt{belongsToMany(products)}.
-  \item \textbf{Order}: \texttt{belongsTo(user,address)}, \texttt{hasMany(orderLines)}, \texttt{hasOne(payment)}.
-  \item \textbf{OrderLine}: \texttt{belongsTo(order,product)}, guarda \texttt{quantity, unit_price, subtotal}.
-  \item \textbf{Address}: \texttt{belongsTo(user)} con campos de dirección y \texttt{is_default}.
-  \item \textbf{Payment}: \texttt{belongsTo(order)} registra el método y estado.
+  \item \textbf{User}: relación \texttt{hasMany(addresses)} para guardar varias direcciones y \texttt{hasMany(orders)} para el historial de compras. También mantiene favoritos mediante \texttt{belongsToMany(products)} a través de la tabla \texttt{favorites}.
+  \item \textbf{Product}: relación \texttt{belongsToMany(categories)} para clasificar productos, \texttt{hasMany(orderLines)} para las líneas de pedido y \texttt{belongsToMany(users)} vía \texttt{favorites}. Sus campos principales son \texttt{name}, \texttt{description}, \texttt{price}, \texttt{stock} y \texttt{active}.
+  \item \textbf{Category}: agrupa productos con \texttt{belongsToMany(products)} y permite construir el catálogo por secciones.
+  \item \textbf{Order}: representa el pedido completo. Se relaciona con el usuario mediante \texttt{belongsTo(user)} y con la dirección de envío mediante \texttt{belongsTo(address)}. Además, contiene \texttt{hasMany(orderLines)} y \texttt{hasOne(payment)}.
+  \item \textbf{OrderLine}: cada línea pertenece a un pedido y a un producto concreto con \texttt{belongsTo(order, product)}. Guarda la información de compra en el momento exacto de la orden: \texttt{quantity}, \texttt{unit\_price} y \texttt{subtotal}. Esta tabla es importante porque conserva el histórico aunque el precio del producto cambie después.
+  \item \textbf{Address}: pertenece a un usuario con \texttt{belongsTo(user)} y almacena los datos de envío. Incluye calle, ciudad, provincia, código postal, país, teléfono y el indicador \texttt{is\_default} para marcar la dirección principal.
+  \item \textbf{Payment}: pertenece a un pedido con \texttt{belongsTo(order)} y registra el método de pago, el estado y el importe final.
 \end{itemize}
 
 \subsection{Detalles y extractos de código}
