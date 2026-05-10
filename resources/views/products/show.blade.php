@@ -113,8 +113,20 @@
                         @auth
                             <form action="{{ route('favorites.toggle', $product) }}" method="POST">
                                 @csrf
-                                <button type="submit" class="btn btn-dh-outline w-100" style="padding: 13px 32px; font-size: 0.9rem;">
-                                    <i class="bi bi-heart me-2"></i>Añadir a favoritos
+
+                                @php
+                                    $isFavorite = auth()->user()
+                                        ->favoriteProducts
+                                        ->contains($product->id);
+                                @endphp
+
+                                <button type="submit" 
+                                class="btn {{ $isFavorite ? 'btn-dh' : 'btn-dh-outline' }} w-100" 
+                                style="padding: 13px 32px; font-size: 0.9rem;">
+
+                                    <i class="bi {{ $isFavorite ? 'bi-heart-fill' : 'bi-heart' }} me-2"></i>
+
+                                    {{ $isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos' }}
                                 </button>
                             </form>
                         @endauth
