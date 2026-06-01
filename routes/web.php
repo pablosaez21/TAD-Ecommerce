@@ -44,6 +44,9 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/orders/{order}/confirmation', [ProfileController::class, 'orderConfirmation'])->name('orders.confirmation');
 
     // Perfil
+    //Como cambio, se deberia de agrupar los endpoints ne un grupo. En este caso se trata de un perfil. Por tanto agruparlo
+    //Por algo como pefil.
+    // Same for everything else.
     Route::get('/profile/addresses', [ProfileController::class, 'addresses'])->name('profile.addresses');
     Route::post('/profile/addresses', [ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
     Route::put('/profile/addresses/{addressId}', [ProfileController::class, 'updateAddress'])->name('profile.addresses.update');

@@ -10,6 +10,7 @@
 \usepackage{tabularx}
 \usepackage{booktabs}
 \usepackage{xcolor}
+\usepackage{placeins}
 \definecolor{colorFondoLogo}{rgb}{0.88, 0.88, 0.88}
 % Configuración de listings para mostrar correctamente código PHP
 \setcounter{tocdepth}{2}
@@ -26,7 +27,7 @@
   columns=fullflexible,
   keepspaces=true,
   frame=single,
-  framerule=0.2pt,
+framerule=0.2pt,
   xleftmargin=0.4em,
   aboveskip=0.8em,
   belowskip=0.8em,
@@ -40,17 +41,41 @@
 \hypersetup{colorlinks=true,linkcolor=magentaDark,urlcolor=magentaMain}
 
 \title{Documentación Técnica: TAD E-commerce Magenta}
-\author{Pablo Saez Morales \\ Oleksandr Baranets \\ Nicolas Porra Collado}
+\author{Pablo Saez Morales \\ Oleksandr B. Baranets \\ Nicolas Porra Collado}
 \date{10 de Mayo de 2026}
 
 \begin{document}
 
-\maketitle
+\begin{titlepage}
+\thispagestyle{empty}
 \begin{center}
-  \vspace{0.5cm}
-  Repositorio: https://github.com/pablosaez21/TAD-Ecommerce\\
-  Grupo Magenta: Pablo Saez Morales, Oleksandr Baranets, Nicolas Porra Collado
+\vspace*{1.5cm}
+
+{\Huge \textbf{PORTADA DEL PROYECTO}}\\[1.2cm]
+
+\begin{flushleft}
+\textbf{Nombre de la app/proyecto:} Double Helix E-commerce\\[0.9cm] 
+
+\textbf{Subtítulo (qué hace en 1 frase):} Una tienda online de artículos deportivos con catálogo, carrito, checkout seguro y panel administrativo.\\[0.9cm]
+
+\textbf{Integrantes y rol (máx. 1 línea por persona):} Oleksandr B. Baranets (Backend, Documentación), 
+Pablo Saez Morales (Frontend), 
+Nicolas Porra Collado (Base de datos)\\[0.9cm]
+
+\textbf{Ciclo / módulo / centro / año / logo centro:} Universidad Pablo de Olavide, 2026\\[0.9cm]
+
+\textbf{Tecnologías (Front/Back/BD/Deploy):} Laravel 9, PHP 8.1, SQLite, Blade, Vite, npm, Local\\[0.9cm]
+
+\textbf{Funcionalidades clave (3--5):} Catálogo con categorías, carrito en sesión, checkout con transacciones ACID, panel administrativo, sistema multiidioma (es/en).\\[0.9cm]
+
+\textbf{Diferenciación frente a alternativas:} Enfoque en experiencia de compra fluida, seguridad en el checkout y panel administrativo completo, todo con una interfaz moderna y responsive.\\[0.9cm]
+
+\textbf{URL repositorio GitHub:}  \url{https://github.com/pablosaez21/TAD-Ecommerce}
+\end{flushleft}
+
+\vfill
 \end{center}
+\end{titlepage}
 
 \tableofcontents
 \cleardoublepage
@@ -302,6 +327,74 @@ Explicación:
 
 Cualquier fallo en la transacción provoca rollback. Casos alternativos: carrito vacío, stock insuficiente, fallo en envío de correo (reintentos asincrónicos / logging).
 
+\chapter{Pruebas de aceptación}
+
+\section{PA-01: Checkout protegido por autenticación}
+\textbf{Objetivo:} Verificar que un visitante no autenticado no puede completar el checkout.\\
+\textbf{Evidencia de código:} \texttt{routes/web.php} protege \texttt{/checkout} y \texttt{/cart/checkout} con \texttt{auth}.\\
+\textbf{Evidencia visual:} \texttt{pruebas/prueba1.png} y \texttt{pruebas/prueba1\_pagina.jpeg}.\\
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.48\textwidth]{pruebas/prueba1.png}
+  \hfill
+  \includegraphics[width=0.48\textwidth]{pruebas/prueba1_pagina.jpeg}
+  \caption{PA-01: código y reflejo en la web del checkout protegido.}
+\end{figure}
+
+\section{PA-02: Consistencia de compra y stock}
+\textbf{Objetivo:} Verificar que el pedido se procesa de forma atómica y segura frente a concurrencia.\\
+\textbf{Evidencia de código:} \texttt{CartController::checkout} usa \texttt{DB::transaction}, \texttt{lockForUpdate()} y \texttt{decrement('stock', ...)}.\\
+\textbf{Evidencia visual:} código y capturas paso a paso.\\
+\begin{figure}[htbp]
+  \centering
+  % Código de la prueba
+  \includegraphics[width=0.7\textwidth]{pruebas/prueba2.png}\\[0.6em]
+  \smallskip
+  % Capturas paso a paso (horizontal)
+  \begin{minipage}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{pruebas/prueba2_captura1.jpeg}
+    \\{\small Paso 1: Iniciar checkout}
+  \end{minipage}\hfill
+  \begin{minipage}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{pruebas/prueba2_captura2.jpeg}
+    \\{\small Paso 2: Confirmar dirección y método}
+  \end{minipage}\hfill
+  \begin{minipage}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{pruebas/prueba2_captura3.jpeg}
+    \\{\small Paso 3: Resumen y confirmación}
+  \end{minipage}
+
+  \caption{PA-02: código (arriba) y capturas paso a paso del flujo de compra (abajo).}
+\end{figure}
+\FloatBarrier
+
+\section{PA-03: Aislamiento de pedidos por usuario}
+\textbf{Objetivo:} Verificar que un usuario no puede acceder al pedido de otro usuario.\\
+\textbf{Evidencia de código:} \texttt{ProfileController::showOrder} y \texttt{orderConfirmation} validan \texttt{\$order->user\_id !== auth()->id()} con \texttt{abort\_if(..., 403)}.\\
+\textbf{Evidencia visual:} \texttt{pruebas/prueba3.png} y \texttt{pruebas/prueba3\_captura.jpeg}.\\
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.48\textwidth]{pruebas/prueba3.png}
+  \hfill
+  \includegraphics[width=0.48\textwidth]{pruebas/prueba3_captura.jpeg}
+  \caption{PA-03: código y captura del aislamiento de pedidos.}
+\end{figure}
+
+\section{PA-04: Acceso admin restringido por rol}
+\textbf{Objetivo:} Verificar que solo usuarios con rol admin acceden al panel de administración.\\
+\textbf{Evidencia de código:} Las rutas admin usan \texttt{auth + admin} y \texttt{AdminMiddleware} bloquea con \texttt{abort(403, 'No autorizado')}.\\
+\textbf{Evidencia visual:} \texttt{pruebas/prueba4.png} y \texttt{pruebas/prueba4\_pagina.jpeg}.\\
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.48\textwidth]{pruebas/prueba4.png}
+  \hfill
+  \includegraphics[width=0.48\textwidth]{pruebas/prueba4_pagina.jpeg}
+  \caption{PA-04: código y pantalla del acceso restringido al admin.}
+\end{figure}
+
 \chapter{Decisiones técnicas y de diseño}
 
 \section{Autenticación}
@@ -358,7 +451,7 @@ php artisan serve
 
 over: http://localhost:8000
 \end{verbatim}
-
+Podrias poner otro puerto en la configuración. Por defecto se utiliza el 8000
 \chapter{Seguridad}
 
 La seguridad del proyecto no se limita a una sola capa, sino que se distribuye en autenticación, autorización, validación, control de concurrencia y protección de datos de negocio.
